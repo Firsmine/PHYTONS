@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Phytons</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="container">
+      <div id="instructionScreen" class="screen active">
+        <div class="card">
+          <h1 id="introTitle">PHYTONS</h1>
+          <p class="desc">Navigate, Eat, Avoid your own tail.</p>
+
+          <div class="instruction">
+            <h2>Controls:</h2>
+            <p>Arrow Keys/WASD = Move</p>
+            <p>Space = Rewind</p>
+          </div>
+
+          <form id="startForm">
+            <label for="playerName">Enter Your Name</label>
+            <input
+              type="text"
+              id="playerName"
+              placeholder="Enter Your Name"
+              required
+            />
+            <button id="playBtn" type="submit">PLAY</button>
+          </form>
+        </div>
+      </div>
+
+      <!-- game screen -->
+      <div id="gameScreen" class="screen">
+        <header class="gameHud">
+          <div class="hudItem">
+            <spam class="hudLabel">Score</spam>
+            <span id="scoreDisplay">6</span>
+          </div>
+          <h2 class="gameTitle">PHYTONS</h2>
+          <div class="hudItem align-right">
+            <span class="hudLabel">Time</span>
+            <span id="timeDisplay">00:00:00</span>
+          </div>
+        </header>
+
+        <div class="boardContainer">
+          <canvas id="gameCanvas" width="960" height="600"></canvas>
+        </div>
+
+        <div class="controlsArea">
+          <div id="normalControl" class="active">
+            <button id="btnTriggerRewind">Rewind</button>
+          </div>
+          <div id="rewindControl" class="hidden">
+            <div class="sliderContainer">
+              <label for="rewindSlider">Timeline (Seconds Ago)</label>
+              <div class="sliderWrapper">
+                <span>5s</span>
+                <input
+                  type="range"
+                  id="rewindSlider"
+                  min="0"
+                  max="5"
+                  step="1"
+                  value="5"
+                />
+                <span>Now</span>
+              </div>
+            </div>
+
+            <div class="rewindAction">
+              <button id="btnCancelRewind" class="btnSecondary">Cancel</button>
+              <button id="btnConfirmRewind" class="btnPrimary">
+                Resume Here
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="gameOverScreen" class="screen">
+        <div class="card">
+          <h1 id="gameOverTitle" class="textDanger">GAME OVER</h1>
+          <div class="statsBox">
+            <p>Player: <strong id="goPlayerName"></strong></p>
+            <p>Score: <strong id="goScore"></strong></p>
+            <p>
+              High Score: <strong id="goHighscore" class="textAccent"></strong>
+            </p>
+          </div>
+          <button id="playAgainBtn">Play Again</button>
+        </div>
+      </div>
+    </div>
+
+    <script src="script.js"></script>
+  </body>
+</html>
