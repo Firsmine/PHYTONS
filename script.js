@@ -20,6 +20,7 @@ const screenInstruction = document.getElementById("instructionScreen");
 const screenGame = document.getElementById("gameScreen");
 const screenGameOver = document.getElementById("gameOverScreen");
 
+// INISIALISASI
 function startGame(name) {
   playerName = name;
   snake = [];
@@ -45,6 +46,7 @@ function startGame(name) {
   spawnPelletIfNeeded();
 }
 
+// GAME LOOP
 function gameLoop() {
   if (isRewinding) return;
   totalTicks++;
@@ -60,6 +62,7 @@ function gameLoop() {
   }
 }
 
+// SNAKE & PELLET
 function moveSnake() {
   const head = snake[0];
   const newX = (head.x + direction.x + BOARD_W) % BOARD_W;
@@ -111,6 +114,7 @@ function createNewPellet() {
   }
 }
 
+// CANVAS
 function drawGame() {
   ctx.fillStyle = "#111b2d";
   ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -145,4 +149,75 @@ function drawGame() {
     ctx.fillStyle = i === 0 ? "#5d96d4" : "#3b82f6";
     ctx.fillRect(s.x * CELL + 1, s.y * CELL + 1, CELL - 2, CELL - 2);
   });
+}
+
+// UI & HIGHSCORE
+function updateHUD() {
+  document.getElementById("scoreDisplay").innerText = snake.length;
+  let totalSeconds = Math.floor(totalTicks / 4);
+  let h = Math.floor(totalSeconds / 3600)
+    .toString()
+    .padStart(2, "0");
+  let m = Math.floor((totalSeconds % 3600) / 60)
+    .toString()
+    .padStart(2, "0");
+  let s = (totalSeconds % 60).toString().padStart(2, "0");
+
+  document.getElementById("timeDisplay").innerText = `${h}:${m}:${s}`;
+}
+
+function gameOver() {
+  clearInterval(gameInterval);
+  // Local Storage
+  const currentScore = snake.length;
+  const storedScore = localStorage.getItem("phytonsHighscore") || 0;
+  if (currentScore > storedScore) {
+    localStorage.setItem("phytonsHighscore", currentScore);
+  }
+  const bestScore = Math.max(currentScore, storedScore);
+
+  document.getElementById("goPlayerName").innerText = playerName;
+  document.getElementById("goScore").innerText = currentScore;
+  document.getElementById("goHighscore").innerText = bestScore;
+  screenGame.classList.remove("active");
+  screenGameOver.classList.add("active");
+}
+
+// REWIND
+function saveHistory() {
+  // Gunakan JSON stringify untuk mengcopy object agar tidak berubah (Deep Copy)
+  const currentState = {
+    snake: JSON.parse(JSON.stringify(snake)),
+    pellets: JSON.parse(JSON.stringify(pellets)),
+    direction: JSON.parse(JSON.stringify(direction)),
+    totalTicks: totalTicks,
+  };
+
+  history.push(currentState);
+
+  // Simpan maksimal 20 history (Karena 20 tick = 5 detik masa lalu)
+  if (history.length > 20) {
+    history.shift(); // Hapus yang paling lama
+  }
+}
+
+function openRewind() {
+  if (!gameInterval || isRewinding || history.length === 0) return;
+  isRewinding = true; // pause
+
+  backupState = {
+    snake: JSON.parse(JSON.stringify(snake)),
+    pellets: JSON.parse(JSON.stringify(pellets)),
+    direction: JSON.parse(JSON.stringify(direction)),
+    totalTicks: totalTicks,
+  };
+  document.getElementById("normalControl").classList.remove("active");
+  document.getElementById("rewindControl").classList.add("active");
+  const slider = document.getElementById("rewindSlider");
+  slider.value = 5; // default 'now'
+}
+function closeRewind() {
+  isRewinding = false; // resume
+  document.getElementById("normalControl").classList.add("active");
+  document.getElementById("rewindControl").classList.remove("active");
 }
