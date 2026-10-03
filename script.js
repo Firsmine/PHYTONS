@@ -1,7 +1,7 @@
 const BOARD_W = 48;
 const BOARD_H = 30;
 const CELL = 20;
-// State Game
+// state
 let snake = [];
 let pellets = [];
 let direction = { x: 1, y: 0, name: "RIGHT" };
@@ -11,9 +11,8 @@ let history = [];
 let gameInterval = null;
 let isRewinding = false;
 let playerName = "";
-// State UI & Rewind
 let backupState = null;
-// DOM Elements
+// DOM
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
 const screenInstruction = document.getElementById("instructionScreen");
@@ -25,7 +24,7 @@ function startGame(name) {
   playerName = name;
   snake = [];
   for (let i = 0; i < 6; i++) {
-    snake.push({ x: 24 - i, y: 15 }); // Mulai dari tengah, panjang 6
+    snake.push({ x: 24 - i, y: 15 }); // mulai dari tengah, panjang 6
   }
   pellets = [];
   direction = { x: 1, y: 0, name: "RIGHT" };
@@ -135,7 +134,7 @@ function drawGame() {
   // gambar pellet
   pellets.forEach((p) => {
     let ticksLeft = 20 - (totalTicks - p.spawnTick);
-    // Berkedip jika sisa umur kurang dari 1 detik (4 tick)
+    // kedip jika sisa umur kurang dari 1 detik (4 tick)
     if (ticksLeft <= 4 && totalTicks % 2 === 0) {
       ctx.fillStyle = "rgba(245, 158, 11, 0.3)";
     } else {
@@ -185,19 +184,16 @@ function gameOver() {
 
 // REWIND
 function saveHistory() {
-  // Gunakan JSON stringify untuk mengcopy object agar tidak berubah (Deep Copy)
   const currentState = {
     snake: JSON.parse(JSON.stringify(snake)),
     pellets: JSON.parse(JSON.stringify(pellets)),
     direction: JSON.parse(JSON.stringify(direction)),
     totalTicks: totalTicks,
   };
-
   history.push(currentState);
-
-  // Simpan maksimal 20 history (Karena 20 tick = 5 detik masa lalu)
+  // maksimal 20 history (20 tick = 5 detik masa lalu)
   if (history.length > 20) {
-    history.shift(); // Hapus yang paling lama
+    history.shift(); // hapus yang paling lama
   }
 }
 
@@ -221,3 +217,84 @@ function closeRewind() {
   document.getElementById("normalControl").classList.add("active");
   document.getElementById("rewindControl").classList.remove("active");
 }
+
+// EVENTS
+const nameInput = document.getElementById("playerName");
+const playBtn = document.getElementById("playBtn");
+
+nameInput.addEventListener("input", () => {
+  playBtn.disabled = nameInput.value.trim() === "";
+});
+document.getElementById("startForm").addEventListener("submit", (e) => {
+  e.preventDefault();
+  if (nameInput.value.trim() !== "") startGame(nameInput.value.trim());
+});
+document.getElementById("playAgainBtn").addEventListener("click", () => {
+  startGame(playerName);
+});
+
+// control
+window.addEventListener("keydown", (e) => {
+  if (document.activeElement.tagName === "INPUT") return;
+  const key = e.key.toLowerCase();
+  if (key === " ") {
+    e.preventDefault();
+    openRewind();
+  }
+  if (isRewinding) return;
+  if ((key === "w" || key === "arrowup") && direction.name !== "DOWN") {
+    nextDirection = { x: 0, y: -1, name: "UP" };
+    e.preventDefault();
+  } else if ((key === "s" || key === "arrowdown") && direction.name !== "UP") {
+    nextDirection = { x: 0, y: 1, name: "DOWN" };
+    e.preventDefault();
+  } else if (
+    (key === "a" || key === "arrowleft") &&
+    direction.name !== "RIGHT"
+  ) {
+    nextDirection = { x: -1, y: 0, name: "LEFT" };
+    e.preventDefault();
+  } else if (
+    (key === "d" || key === "arrowright") &&
+    direction.name !== "LEFT"
+  ) {
+    nextDirection = { x: 1, y: 0, name: "RIGHT" };
+    e.preventDefault();
+  }
+});
+
+// rewind
+document
+  .getElementById("btnTriggerRewind")
+  .addEventListener("click", openRewind);
+document.getElementById("btnCancelRewind").addEventListener("click", () => {
+  snake = backupState.snake;
+  pellets = backupState.pellets;
+  direction = backupState.direction;
+  totalTicks = backupState.totalTicks;
+  drawGame();
+  updateHUD();
+  closeRewind();
+});
+document.getElementById("btnConfirmRewind").addEventListener("click", () => {
+  closeRewind();
+});
+// slider
+document.getElementById("rewindSlider").addEventListener("input", (e) => {
+  const val = parseInt(e.target.value);
+  // val 5 = now (0 detik lalu)
+  // val 0 = 5 detik lalu (maksimal 20 tick lalu)
+  const secondsAgo = 5 - val;
+  const ticksAgo = secondsAgo * 4;
+  let targetIndex = history.length - 1 - ticksAgo;
+  if (targetIndex < 0) targetIndex = 0;
+  const pastState = history[targetIndex];
+  if (pastState) {
+    snake = JSON.parse(JSON.stringify(pastState.snake));
+    pellets = JSON.parse(JSON.stringify(pastState.pellets));
+    direction = JSON.parse(JSON.stringify(pastState.direction));
+    totalTicks = pastState.totalTicks;
+    drawGame();
+    updateHUD();
+  }
+});
