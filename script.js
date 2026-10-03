@@ -14,11 +14,11 @@ let playerName = "";
 // State UI & Rewind
 let backupState = null;
 // DOM Elements
-const canvas = document.getElementById("game-canvas");
+const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
-const screenInstruction = document.getElementById("instruction-screen");
-const screenGame = document.getElementById("game-screen");
-const screenGameOver = document.getElementById("game-over-screen");
+const screenInstruction = document.getElementById("instructionScreen");
+const screenGame = document.getElementById("gameScreen");
+const screenGameOver = document.getElementById("gameOverScreen");
 
 function startGame(name) {
   playerName = name;
@@ -37,8 +37,8 @@ function startGame(name) {
   screenGameOver.classList.remove("active");
   screenGame.classList.add("active");
 
-  document.getElementById("normal-controls").classList.add("active");
-  document.getElementById("rewind-controls").classList.remove("active");
+  document.getElementById("normalControl").classList.add("active");
+  document.getElementById("rewindControl").classList.remove("active");
 
   if (gameInterval) clearInterval(gameInterval);
   gameInterval = setInterval(gameLoop, 250);
@@ -109,4 +109,40 @@ function createNewPellet() {
   if (freePos) {
     pellets.push({ x: freePos.x, y: freePos.y, spawnTick: totalTicks });
   }
+}
+
+function drawGame() {
+  ctx.fillStyle = "#111b2d";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  // grid
+  ctx.strokeStyle = "rgba(255, 255, 255, 0.03)";
+  ctx.beginPath();
+  for (let x = 0; x <= canvas.width; x += CELL) {
+    ctx.moveTo(x, 0);
+    ctx.lineTo(x, canvas.height);
+  }
+  for (let y = 0; y <= canvas.height; y += CELL) {
+    ctx.moveTo(0, y);
+    ctx.lineTo(canvas.width, y);
+  }
+  ctx.stroke();
+
+  // gambar pellet
+  pellets.forEach((p) => {
+    let ticksLeft = 20 - (totalTicks - p.spawnTick);
+    // Berkedip jika sisa umur kurang dari 1 detik (4 tick)
+    if (ticksLeft <= 4 && totalTicks % 2 === 0) {
+      ctx.fillStyle = "rgba(245, 158, 11, 0.3)";
+    } else {
+      ctx.fillStyle = "#f59e0b";
+    }
+    ctx.fillRect(p.x * CELL + 2, p.y * CELL + 2, CELL - 4, CELL - 4);
+  });
+
+  // gambar ular
+  snake.forEach((s, i) => {
+    ctx.fillStyle = i === 0 ? "#5d96d4" : "#3b82f6";
+    ctx.fillRect(s.x * CELL + 1, s.y * CELL + 1, CELL - 2, CELL - 2);
+  });
 }
